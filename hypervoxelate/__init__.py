@@ -67,6 +67,11 @@ def get_global_1D_data(data):
     data = np.reshape(data, (np.size(data, axis=0) * np.size(data, axis=1), -1))
     return data
 
+def reverse_axes(data):
+    for lower_axis in range(0, data.ndim // 2):
+        data = np.swapaxes(data, lower_axis, data.ndim - lower_axis - 1)
+    return data
+
 def hypervoxelate(data, cut_points="global_absolute", side="left", resolution=-1):
     NUM_PLOTS = np.size(data, axis=0)
     NUM_POINTS = np.size(data, axis=1)
@@ -154,5 +159,6 @@ def hypervoxelate(data, cut_points="global_absolute", side="left", resolution=-1
     for plot in range(0, NUM_PLOTS):
         hyper.append(np.reshape(np.bincount(flattened[plot, :], minlength=partial_products[-1]), shape_arr))
     hyper = np.array(hyper)
+    hyper = reverse_axes(hyper)
 
     return hyper
