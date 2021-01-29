@@ -18,9 +18,11 @@ Then use
 ```
 from hypervoxelate import hypervoxelate
 
-data = ...
-plotted = hypervoxelate(data, cut_points)
-plotted = hypervoxelate(data, cut_points="local_relative", resolution=5) # Example of specifying a pre-written algorithm.
+data = [[[0, 1], [1, 0], [2, 3], [3, 2]], [[0, 0], [1, 1], [2, 2], [3, 3]]]
+cut_points = [[0.5, 1.5, 2.5], [1.5]]
+plotted = hypervoxelate(data, cut_points=cut_points) # Global example
+
+plotted = hypervoxelate(data, cut_points="local_relative", resolution=5) # Pre-specified
 ```
 
 Other accessory methods from the function you might find useful include ``get_global_1D_data()``, which reshapes data in the form ``(num_points, dims)``, and the four cut point-specifying methods ``{global, local}_{relative, absolute}_cp()``.
