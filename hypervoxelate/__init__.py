@@ -7,17 +7,23 @@ def global_absolute_cp(data, resolution):
     NUM_DIMS = np.size(data, axis=2)
 
     flat_data = get_global_1D_data(data)
-    min = np.amin(flat_data, axis=0)
-    max = np.amax(flat_data, axis=0)
+    cut_points = []
+    if isinstance(resolution, (int)):
+        min = np.amin(flat_data, axis=0)
+        max = np.amax(flat_data, axis=0)
 
-    multiplier = np.array(range(1, resolution))
-    multiplier = multiplier / resolution
-    multiplier = np.reshape(multiplier, (-1, 1))
-    multiplier = np.repeat(multiplier, NUM_DIMS, axis=1)
+        multiplier = np.array(range(1, resolution))
+        multiplier = multiplier / resolution
+        multiplier = np.reshape(multiplier, (-1, 1))
+        multiplier = np.repeat(multiplier, NUM_DIMS, axis=1)
 
-    cut_points = multiplier * (max - min)
-    cut_points = cut_points + min
-    cut_points = np.swapaxes(cut_points, 0, 1)
+        cut_points = multiplier * (max - min)
+        cut_points = cut_points + min
+        cut_points = np.swapaxes(cut_points, 0, 1)
+    else:
+        for dim in range(0, NUM_DIMS):
+            slice_flat_data = np.reshape(flat_data[:, dim], (1, np.size(flat_data, axis=0), np.size(flat_data, axis=1)))
+            cut_points.append(global_absolute_cp(slice_flat_data, resolution[dim])[0, :])
     return cut_points
 
 def local_absolute_cp(data, resolution):
@@ -28,9 +34,8 @@ def local_absolute_cp(data, resolution):
     cut_points = []
     for plot in range(0, NUM_PLOTS):
         data_slice = data[plot, :, :]
-        data_slice = np.reshape(data_slice, (1, np.size(data_slice, axis=0), np.size(data_slice, axis=1)))
+        data_slice = np.reshape(data_slice, (1, np.size(data_slice, axis=0), 1))
         cut_points.append(global_absolute_cp(data_slice, resolution))
-    cut_points = np.array(cut_points)
     return cut_points
 
 def global_relative_cp(data, resolution):
@@ -39,8 +44,14 @@ def global_relative_cp(data, resolution):
     NUM_DIMS = np.size(data, axis=2)
 
     flat_data = get_global_1D_data(data)
-    quantile_cuts = np.array(range(1, resolution)) / resolution
-    cut_points = np.swapaxes(np.quantile(flat_data, quantile_cuts, axis=0), 0, 1)
+    cut_points = []
+    if isinstance(resolution, (int)):
+        quantile_cuts = np.array(range(1, resolution)) / resolution
+        cut_points = np.swapaxes(np.quantile(flat_data, quantile_cuts, axis=0), 0, 1)
+    else:
+        for dim in range(0, NUM_DIMS):
+            slice_flat_data = np.reshape(flat_data[:, dim], (1, np.size(flat_data, axis=0), 1))
+            cut_points.append(global_relative_cp(slice_flat_data, resolution[dim])[0, :])
     return cut_points
 
 def local_relative_cp(data, resolution):
@@ -53,7 +64,7 @@ def local_relative_cp(data, resolution):
         data_slice = data[plot, :, :]
         data_slice = np.reshape(data_slice, (1, np.size(data_slice, axis=0), np.size(data_slice, axis=1)))
         cut_points.append(global_relative_cp(data_slice, resolution))
-    cut_points = np.array(cut_points)
+
     return cut_points
 
 def get_global_1D_data(data):
